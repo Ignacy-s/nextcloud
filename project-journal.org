@@ -1,0 +1,168 @@
+Need to setup my own Nextcloud/Owncloud instance for wedding
+pictures.
+* DONE Choosing what to install - Nextcloud has ~20k stars on Github, Owncloud - ~7.5k. Choosing Nextcloud
+  CLOSED: [2022-07-04 Mon 09:17]
+* DONE Choosing how to install.
+  CLOSED: [2022-07-04 Mon 09:17]
+** Using Nextcloud docker image.
+* DONE Local demo without compose - just the Nextcloud container.
+  CLOSED: [2022-07-04 Mon 09:16]
+** Found installation instructions in the manual, but why bother. Better use docker images.
+** Deciding not to over complicate implementation for now and leave all the bells and whistles ideas as  extr
+** For starter managed to access web server on vagrant machine from friends mobile phone. (Re-started container in bridged network mode and found it's ip address).
+*** Had some issues at first, but then realized that friend is not connected to my hotspot.
+* TODO Local demo with docker-compose, multiple containers, but without proper secrets handling.
+** Using the docker compose file from image's documentation (that can be found in this document under 'Feature Ideas>Use docker compose').
+** Had to download docker-compose. Started the service by running 'docker-compose -d up' in the directory where I pasted the compose.yml file.
+** Running a Traefik tutorial from [[https://doc.traefik.io/traefik/getting-started/quick-start/][here]]. Still have notes from the last time I used Traefik, but it has been a while and it's just about creating some docker-compose files.
+*** First docker compose from quickstart tutorial.
+#+BEGIN_SRC ruby
+version: '3'
+
+services:
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.7
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+#+END_SRC
+**** Adding whoami service:
+#+BEGIN_SRC ruby
+  whoami:
+    # A container that exposes an API to show its IP address
+    image: traefik/whoami
+    labels:
+      - "traefik.http.routers.whoami.rule=Host(`whoami.docker.localhost`)"
+#+END_SRC
+**** Scaled up with 'docker-compose up -d --scale whoami=2' and can see how service is load balanced with 'curl -H Host:whoami.docker.localhost http://127.0.0.1' showing different machines.
+** As I understand, Traefik doesn't change much in how the system's docker-compose file will be made. It's just another container to be run along others. And the other containers need an extra rubric in docker-compose file with labels to be read by Traefik.
+** 
+* Features Ideas:
+** Use Backblaze container
+** Use docker compose.
+#+BEGIN_SRC bash
+Base version - apache
+
+This version will use the apache image and add a mariaDB container. The volumes are set to keep your data persistent. This setup provides no ssl encryption and is intended to run behind a proxy.
+
+Make sure to pass in values for MYSQL_ROOT_PASSWORD and MYSQL_PASSWORD variables before you run this setup.
+
+version: '2'
+
+volumes:
+  nextcloud:
+  db:
+
+services:
+  db:
+    image: mariadb
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_PASSWORD=
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+
+  app:
+    image: nextcloud
+    restart: always
+    ports:
+      - 8080:80
+    links:
+      - db
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      - MYSQL_PASSWORD=
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+
+Then run docker-compose up -d, now you can access Nextcloud at http://localhost:8080/ from your host system.
+
+#+END_SRC
+
+** Use Docker Secrets
+*** Copied from Docker Hub Readme file for Nextcloud.
+#+BEGIN_SRC bash
+Docker Secrets
+
+As an alternative to passing sensitive information via environment variables, _FILE may be appended to the previously listed environment variables, causing the initialization script to load the values for those variables from files present in the container. In particular, this can be used to load passwords from Docker secrets stored in /run/secrets/<secret_name> files. For example:
+
+version: '3.2'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB_FILE=/run/secrets/postgres_db
+      - POSTGRES_USER_FILE=/run/secrets/postgres_user
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+    secrets:
+      - postgres_db
+      - postgres_password
+      - postgres_user
+
+  app:
+    image: nextcloud
+    restart: always
+    ports:
+      - 8080:80
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB_FILE=/run/secrets/postgres_db
+      - POSTGRES_USER_FILE=/run/secrets/postgres_user
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+      - NEXTCLOUD_ADMIN_PASSWORD_FILE=/run/secrets/nextcloud_admin_password
+      - NEXTCLOUD_ADMIN_USER_FILE=/run/secrets/nextcloud_admin_user
+    depends_on:
+      - db
+    secrets:
+      - nextcloud_admin_password
+      - nextcloud_admin_user
+      - postgres_db
+      - postgres_password
+      - postgres_user
+
+volumes:
+  db:
+  nextcloud:
+
+secrets:
+  nextcloud_admin_password:
+    file: ./nextcloud_admin_password.txt # put admin password in this file
+  nextcloud_admin_user:
+    file: ./nextcloud_admin_user.txt # put admin username in this file
+  postgres_db:
+    file: ./postgres_db.txt # put postgresql db name in this file
+  postgres_password:
+    file: ./postgres_password.txt # put postgresql password in this file
+  postgres_user:
+    file: ./postgres_user.txt # put postgresql username in this file
+
+Currently, this is only supported for NEXTCLOUD_ADMIN_PASSWORD, NEXTCLOUD_ADMIN_USER, MYSQL_DATABASE, MYSQL_PASSWORD, MYSQL_USER, POSTGRES_DB, POSTGRES_PASSWORD, POSTGRES_USER, REDIS_HOST_PASSWORD and SMTP_PASSWORD.
+
+If you set any group of values (i.e. all of MYSQL_DATABASE_FILE, MYSQL_USER_FILE, MYSQL_PASSWORD_FILE, MYSQL_HOST), the script will not use the corresponding group of environment variables (MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST).
+
+#+END_SRC
+
+** Use Traefik.
+** Use Portainer.
+* Extras:
+** TODO Vagrant doesn't start automatically (requires choosing an interface to bridge with). Make it use wlp3s0 by default.

@@ -1,0 +1,32 @@
+# Emacs
+\#*\#
+*\~
+
+# Vagrant/Virtualbox files/logs
+*.log
+.vagrant/
+
+## Debugging files
+# DB dumpfiles used for debugging
+*.dump
+# Temporary files
+temp*
+# Script output files used for debugging
+*.out
+
+# Backup files.
+*.bak.*
+
+## Not to be shared on Github:
+# Files and docs about the incidents, not to be shared on github.
+incident-management.org
+# Old wordpress migration project.
+1-WP-migration/
+# Secrets and infra files.
+instances
+secrets*
+
+## Others:
+# Don't know why it's here
+anaconda-ks.cfg
+acme.json
