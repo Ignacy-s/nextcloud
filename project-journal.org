@@ -11,10 +11,12 @@ pictures.
 ** Deciding not to over complicate implementation for now and leave all the bells and whistles ideas as  extr
 ** For starter managed to access web server on vagrant machine from friends mobile phone. (Re-started container in bridged network mode and found it's ip address).
 *** Had some issues at first, but then realized that friend is not connected to my hotspot.
-* TODO Local demo with docker-compose, multiple containers, but without proper secrets handling.
+* DONE Local demo with docker-compose, multiple containers, but without proper secrets handling.
+  CLOSED: [2022-07-04 Mon 23:52]
 ** Using the docker compose file from image's documentation (that can be found in this document under 'Feature Ideas>Use docker compose').
-** Had to download docker-compose. Started the service by running 'docker-compose -d up' in the directory where I pasted the compose.yml file.
-** Running a Traefik tutorial from [[https://doc.traefik.io/traefik/getting-started/quick-start/][here]]. Still have notes from the last time I used Traefik, but it has been a while and it's just about creating some docker-compose files.
+** Had to download docker-compose. Started the service by running 'docker-compose -d up' in the directory where I pasted the compose.yml file. It works as intended.
+
+* Running a Traefik tutorial from [[https://doc.traefik.io/traefik/getting-started/quick-start/][here]]. Still have notes from the last time I used Traefik, but it has been a while and it's just about creating some docker-compose files.
 *** First docker compose from quickstart tutorial.
 #+BEGIN_SRC ruby
 version: '3'
@@ -44,10 +46,11 @@ services:
 #+END_SRC
 **** Scaled up with 'docker-compose up -d --scale whoami=2' and can see how service is load balanced with 'curl -H Host:whoami.docker.localhost http://127.0.0.1' showing different machines.
 ** As I understand, Traefik doesn't change much in how the system's docker-compose file will be made. It's just another container to be run along others. And the other containers need an extra rubric in docker-compose file with labels to be read by Traefik.
-** 
+
 * Features Ideas:
 ** Use Backblaze container
-** Use docker compose.
+** DONE Use docker compose.
+   CLOSED: [2022-07-04 Mon 23:51]
 #+BEGIN_SRC bash
 Base version - apache
 
