@@ -16,7 +16,8 @@ pictures.
 ** Using the docker compose file from image's documentation (that can be found in this document under 'Feature Ideas>Use docker compose').
 ** Had to download docker-compose. Started the service by running 'docker-compose -d up' in the directory where I pasted the compose.yml file. It works as intended.
 
-* Running a Traefik tutorial from [[https://doc.traefik.io/traefik/getting-started/quick-start/][here]]. Still have notes from the last time I used Traefik, but it has been a while and it's just about creating some docker-compose files.
+* DONE Running a Traefik tutorial from [[https://doc.traefik.io/traefik/getting-started/quick-start/][here]]. Still have notes from the last time I used Traefik, but it has been a while and it's just about creating some docker-compose files.
+  CLOSED: [2022-07-08 Fri 02:38]
 *** First docker compose from quickstart tutorial.
 #+BEGIN_SRC ruby
 version: '3'
@@ -46,6 +47,184 @@ services:
 #+END_SRC
 **** Scaled up with 'docker-compose up -d --scale whoami=2' and can see how service is load balanced with 'curl -H Host:whoami.docker.localhost http://127.0.0.1' showing different machines.
 ** As I understand, Traefik doesn't change much in how the system's docker-compose file will be made. It's just another container to be run along others. And the other containers need an extra rubric in docker-compose file with labels to be read by Traefik.
+* DONE Learning up on DNS in Docker from [[https://web.archive.org/web/20210724052518/https://kerneltalks.com/networking/how-docker-container-dns-works/][blog article on wayback machine]].
+  CLOSED: [2022-07-08 Fri 02:38]
+* DONE Getting a domain with Cloud Flare.
+  CLOSED: [2022-07-08 Fri 02:42]
+* DONE Reading up on how to use secrets with docker compose. Mentioning some sites:
+  CLOSED: [2022-07-08 Fri 03:57]
+** [[https://www.rockyourcode.com/using-docker-secrets-with-docker-compose/]]
+*** For a local setup we can use files containing the secrets.
+*** For production need to use docker swarm to declare secrets on a different node.
+* TODO Local demo with docker-compose, traefik and portainer alongside, defining a network. Based on edited compose file from previous class.
+** Writing a new docker-compose file based on examples from Docker Masterclass, Panda DevOps and Traefik Quickstart tutorial.
+*** After defining the network, adding traefik container, nextcloud container and db for nextcloud.
+#+BEGIN_SRC bash
+version : '3'
+# Defining a personal Nextcloud server with Traefik and Portainer
+
+services:
+  traefik-proxy:
+    # Handles TLS certs and http to https redirection
+    image: traefik:2.8
+    restart: always
+    container_name: traefik
+    command:
+      # Enables the web UI
+      - "--api.insecure=true"
+      # Declares cooperation with docker
+      - "--providers.docker"
+      ports:
+        - "80:80"
+        # For Web UI enabled by 'api-insecure'
+        - "8080:8080"
+      volumes:
+        # Enables docker cooperation
+        - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  nextcloud:
+    image: nextcloud
+    restart: always
+    depends_on:
+      - traefik-proxy
+      - db-next
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+      
+    networks:
+      - nextcloud_db_network
+      
+  db-next:
+    image: mariadb
+    restart: always
+    command:
+      - --transaction-isolation=READ-COMMITTED
+      - --binlog-format=ROW
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    depends_on:
+      - traefik-proxy
+    networks:
+      - nextcloud_db_network
+              
+
+
+
+networks:
+  nextcloud_db_network:
+    driver: bridge
+#+END_SRC
+*** DONE Add volumes
+    CLOSED: [2022-07-08 Fri 17:42]
+#+BEGIN_SRC bash
+version : '3'
+# Defining a personal Nextcloud server with Traefik and Portainer
+
+services:
+  traefik-proxy:
+    # Handles TLS certs and http to https redirection
+    image: traefik:2.8
+    restart: always
+    container_name: traefik
+    command:
+      # Enables the web UI
+      - "--api.insecure=true"
+      # Declares cooperation with docker
+      - "--providers.docker"
+      # Defines entry for regular http traffic.
+      - "--entryPoints.web.address=:80"
+      # Redirects http to https
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # Defines https entry
+      - "--entryPoints.websecure.address=:443"
+      
+
+    ports:
+      - "80:80"
+      # For Web UI enabled by 'api-insecure'
+      - "8080:8080"
+    volumes:
+      # Enables docker cooperation
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  nextcloud:
+    image: nextcloud
+    restart: always
+    depends_on:
+      - traefik-proxy
+      - db-next
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.localhost`)"
+      - "traefik.http.routers.nextcloud.entrypoints=websecure"
+    networks:
+      - nextcloud_db_network
+      
+  db-next:
+    image: mariadb
+    restart: always
+    command:
+      - --transaction-isolation=READ-COMMITTED
+      - --binlog-format=ROW
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    depends_on:
+      - traefik-proxy
+    networks:
+      - nextcloud_db_network
+
+networks:
+  nextcloud_db_network:
+    driver: bridge
+
+volumes:
+  nextcloud:
+  db:
+#+END_SRC
+**** TODO See if it runs.
+***** Doesn't run - trying with a simpler setup.
+***** Got the quickstart demo to run. Had to modify a HTTP Header.
+http headers are sent along with the http request. They have to be
+changed if we connect with a host behind traefik. Before I used curl
+to get it to run. Defining headers in curl is easy:
+curl -H Host:whoami.docker.localhost http://127.0.0.1
+*** TODO Add secrets
+**** TODO In files first.
+** Get Portainer.
+* TODO Online demo using the domain.
+** Getting the docker-compose file to run on the server.
+*** TODO Installing docker & utils on the server.
+* TODO Get certs with Traefik.
+** Fake (training) cert.
+** Real cert.
+* TODO http to https redirect with Traefik.
+* TODO Docker Swarm with a separate manager node.
+** Get Swarm to Work
+** Automate Reading secrets by docker swarm.
 
 * Features Ideas:
 ** Use Backblaze container

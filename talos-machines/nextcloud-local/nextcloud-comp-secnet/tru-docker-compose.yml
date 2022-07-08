@@ -1,0 +1,39 @@
+version : '3'
+# Defining a personal Nextcloud server with Traefik and Portainer.
+
+services:
+  traefik-proxy:
+    # To handle TLS certs and http to https redirection.
+    image: traefik:2.8
+    # Enables the web UI and declares cooperation with docker.
+    command: --api.insecure=true --providers.docker
+    container_name: traefik
+    command:
+      - '--api.insecure=true'
+      - '--providers.docker'
+
+
+
+
+
+
+ports:
+      - "8880:8080"
+      - "50000:50000"
+    volumes:
+      - ../volumes/jenkins:/var/jenkins_home
+    networks:
+      - docker_network
+  
+  ubuntu:
+    container_name: ubuntucompose
+    build: ../dockerfiles/slave/
+    depends_on:
+      - "jenkins"
+    networks:
+      - docker_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # I put this command in the dockerfile.
+    #command: java -jar agent.jar -jnlpUrl http://jenkinscompose...itd
+    command: java -jar agent.jar -jnlpUrl http://192.168.44.44:8880/computer/ubuntuslave/jenkins-agent.jnlp -secret 9d36cf134454d8da6125bf7cb47f3f3bac65dd945ab6f40695910c78904da71c -workDir "/home/"
