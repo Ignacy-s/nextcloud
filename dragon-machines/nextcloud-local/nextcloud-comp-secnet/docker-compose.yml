@@ -15,14 +15,18 @@ services:
       # Defines entry for regular http traffic.
       - "--entryPoints.web.address=:80"
       # Redirects http to https
-#      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-#      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       # Defines https entry
-#      - "--entryPoints.websecure.address=:443"
+      - "--entryPoints.websecure.address=:443"
+      - "--providers.docker.exposedbydefault=false"
+      # Debug mode - prints more logs
+      # - "--log.level=DEBUG"
     ports:
       - "80:80"
       # For Web UI enabled by 'api-insecure'
       - "8080:8080"
+      - "443:443"
     volumes:
       # Enables docker cooperation
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
@@ -44,14 +48,18 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.localhost`)"
+      - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.docker.localhost`)"
       - "traefik.http.routers.nextcloud.entrypoints=websecure"
       - "traefik.http.routers.nextcloud.entrypoints=web"
-    networks:
-      - nextcloud_db_network
+ #   networks:
+ #     - nextcloud_db_network
       
+
+
   db-next:
     image: mariadb
+    container_name:
+      mariadb
     restart: always
     command:
       - --transaction-isolation=READ-COMMITTED

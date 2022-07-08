@@ -212,6 +212,121 @@ http headers are sent along with the http request. They have to be
 changed if we connect with a host behind traefik. Before I used curl
 to get it to run. Defining headers in curl is easy:
 curl -H Host:whoami.docker.localhost http://127.0.0.1
+
+For use with Firefox and connecting from a different machine on the
+same local network, we need to modify the Host header in the
+browser. Tried 3 extensions, third worked for me. [[https://mybrowseraddon.com/modify-header-value.html][Modify Header Value
+(HTTP Headers)]]
+***** Trying to use the same Firefox Extension to modify header.
+****** Opening traefik dashboard to find out what to put in the Host header.
+it's under IP_ADDRESS:8080/dashboard
+***** Something was wrong, so I added the whoami container to the nextcloud docker-compose. Whoami was working (pointing at the http://192.168.1.187/ with Host('whoami.docker.localhost')).
+***** Spent lot of time trying to have nextcloud work the same way (just changing part of the host header to Host('nextcloud.docker.localhost').
+***** Found the error, when scrolled up the screen. There was an orphan container when I removed whoami from docker-compose file.
+***** DONE Working with limited functionality - kept removing things from the docker-compose.
+      CLOSED: [2022-07-08 Fri 19:58]
+****** docker-compose atm:
+
+#+BEGIN_SRC yaml
+version : '3'
+# Defining a personal Nextcloud server with Traefik and Portainer
+
+services:
+  traefik-proxy:
+    # Handles TLS certs and http to https redirection
+    image: traefik:2.8
+    restart: always
+    container_name: traefik
+    command:
+      # Enables the web UI
+      - "--api.insecure=true"
+      # Declares cooperation with docker
+      - "--providers.docker"
+      # Defines entry for regular http traffic.
+      - "--entryPoints.web.address=:80"
+      # Redirects http to https
+#      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+#      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # Defines https entry
+      - "--entryPoints.websecure.address=:443"
+      - "--providers.docker.exposedbydefault=false"
+      - "--log.level=DEBUG"
+    ports:
+      - "80:80"
+      # For Web UI enabled by 'api-insecure'
+      - "8080:8080"
+      - "443:443"
+    volumes:
+      # Enables docker cooperation
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  nextcloud:
+    image: nextcloud
+    restart: always
+    container_name: nextcloud
+    depends_on:
+      - traefik-proxy
+      - db-next
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.docker.localhost`)"
+      # - "traefik.http.routers.nextcloud.entrypoints=websecure"
+      # - "traefik.http.routers.nextcloud.entrypoints=web"
+    # networks:
+    #   - nextcloud_db_network
+      
+  # Putting a whoami container to check if it will work.
+  
+  # whoami:
+  #   # A container that exposes an API to show its IP address
+  #   image: traefik/whoami
+  #   container_name: whoami
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.whoami.rule=Host(`whoami.docker.localhost`)"
+  #     # - "traefik.http.routers.nextcloud.entrypoints=websecure"
+  #     # - "traefik.http.routers.nextcloud.entrypoints=web"
+
+
+  db-next:
+    image: mariadb
+    restart: always
+    command:
+      - --transaction-isolation=READ-COMMITTED
+      - --binlog-format=ROW
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    depends_on:
+      - traefik-proxy
+    networks:
+      - nextcloud_db_network
+
+networks:
+  nextcloud_db_network:
+    driver: bridge
+
+volumes:
+  nextcloud:
+  db:
+#+END_SRC
+
+***** Uncomment things in docker-compose and see what happens. - It's the network defined in docker-compose that caused problems.
+***** Need to learn how to connect nextcloud container with the database container using traefik.
+
+
 *** TODO Add secrets
 **** TODO In files first.
 ** Get Portainer.
