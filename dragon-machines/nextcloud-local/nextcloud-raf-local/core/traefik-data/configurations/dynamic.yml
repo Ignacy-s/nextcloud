@@ -1,0 +1,21 @@
+# Dynamic configuration
+http:
+  middlewares:
+  #   secureHeaders:
+  #     headers:
+  #       sslRedirect: true
+  #       forceSTSHeader: true
+  #       stsIncludeSubdomains: true
+  #       stsPreload: true
+  #       stsSeconds: 31536000
+
+    user-auth:
+      basicAuth:
+        users:
+          # MOVED TO ANOTHER FILE
+
+# tls:
+#   options:
+#     default:
+#       cipherSuites:
+          # Moved to another file.

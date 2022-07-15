@@ -29,4 +29,12 @@ secrets*
 ## Others:
 # Don't know why it's here
 anaconda-ks.cfg
+
+# Let's not share certs.
 acme.json
+
+## PORTAINER && TRAEFIK PROJECT STUFF:
+# Portainer files:
+**/portainer-data/*
+# Traefik configuration
+dynamic-password-hash.yml

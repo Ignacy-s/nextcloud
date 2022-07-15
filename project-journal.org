@@ -326,9 +326,37 @@ volumes:
 ***** Uncomment things in docker-compose and see what happens. - It's the network defined in docker-compose that caused problems.
 ***** Need to learn how to connect nextcloud container with the database container using traefik.
 
+*** [[https://duckduckgo.com/?q=traefik+example+connect+app+and+database+containers&t=ffab&ia=web][Search for the docs]] resulted with an interesting find - example traefik/portainer/compose setup in a [[https://rafrasenberg.com/posts/docker-container-management-with-traefik-v2-and-portainer/][blog article]].
+*** TODO Connect app and db containers using Traefik.
+**** DONE Downloading project files from Raf's (blog author) Github repo.
+CLOSED: [2022-07-15 Fri 23:20]
+#+BEGIN_SRC bash
+  mkdir /vagrant/nextcloud-raf-local
+  cd !$
+  curl -L \ https://github.com/rafrasenberg/docker-traefik-portainer/archive/master.tar.gz\
+    | tar --strip-components=1 -zxf -
+#+END_SRC
+**** DONE Commenting out things related to https.
+CLOSED: [2022-07-15 Fri 23:20]
+**** DONE Updating the password.
+CLOSED: [2022-07-15 Fri 23:20]
+Used 'htpasswd -n igi'.
+'htpasswd' can be found in the 'apache2-utils' package (on Ubuntu).
+**** DONE Looking for workaround to using the 'Host' http header for routing - too lazy to forge http requests using browser plugins
+CLOSED: [2022-07-15 Fri 00:24]
+Http request consists of several things, one of them can be one or many
+headers. One of the headers carries information on what the hostname
+that we tried to access was. Http request is sent to an IP address, so
+the Host header can be handy. Since I'm typing the IP address in the
+browser, have to find another way to let traefik know which service I
+want to access.
+**** DONE Adding new entrypoint for traefik dashboard. This way regular traffic will go to the portainer container and port 8080 to traefik dashboard.
+CLOSED: [2022-07-15 Fri 00:24]
+**** TODO Add the nextcloud service and db for nextcloud.
 
 *** TODO Add secrets
 **** TODO In files first.
+
 ** Get Portainer.
 * TODO Online demo using the domain.
 ** Getting the docker-compose file to run on the server.
@@ -463,3 +491,11 @@ If you set any group of values (i.e. all of MYSQL_DATABASE_FILE, MYSQL_USER_FILE
 ** Use Portainer.
 * Extras:
 ** TODO Vagrant doesn't start automatically (requires choosing an interface to bridge with). Make it use wlp3s0 by default.
+** [[https://stackoverflow.com/a/72599205][Link]]: Downloading contents of a git repo without creating the git repo itself (without creating .git directory and all the stuff inside it)
+in my case:
+#+BEGIN_SRC bash
+curl -L
+https://github.com/rafrasenberg/docker-traefik-portainer/archive/master.tar.gz |
+tar zxf -
+#+END_SRC
+*** It's pretty cool, because it allows "cloning" stuff into directories already indexed by another repo.
