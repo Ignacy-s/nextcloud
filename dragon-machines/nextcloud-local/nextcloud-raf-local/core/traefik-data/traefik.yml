@@ -5,6 +5,8 @@ api:
 entryPoints:
   traefik-dashboard:
     address: :8080
+  portainer-entry:
+    address: :8081
   web:
     address: :80
   #   http:
