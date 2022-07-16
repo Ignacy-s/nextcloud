@@ -366,7 +366,10 @@ CLOSED: [2022-07-16 Sat 17:14]
 CLOSED: [2022-07-16 Sat 17:20]
 ***** DONE Create a new ingress for portainer so that nextcloud can use the default (port 80) route. It works, I think I'm getting the hang of using traefik.
 CLOSED: [2022-07-16 Sat 17:23]
-***** Setup the network in the traefik way (with proper labels).
+***** DONE Setup the network for nextcloud and it's database in the traefik way (with proper labels).
+CLOSED: [2022-07-16 Sat 18:06]
+****** Had a problem with whether I should route the to-database-traffic with Traefik. [[https://www.digitalocean.com/community/tutorials/how-to-use-traefik-v2-as-a-reverse-proxy-for-docker-containers-on-ubuntu-20-04][This digitalocean article]] says that it's enough to use docker networks, and to also tell traefik not to touch this container.
+****** Works :)
 
 *** TODO Add secrets
 **** TODO In files first.
