@@ -25,10 +25,8 @@ incident-management.org
 # Secrets and infra files.
 instances
 secrets*
+*.secret
 
-## Others:
-# Don't know why it's here
-anaconda-ks.cfg
 
 # Let's not share certs.
 acme.json

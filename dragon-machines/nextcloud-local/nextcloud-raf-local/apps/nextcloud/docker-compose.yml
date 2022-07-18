@@ -1,4 +1,14 @@
-version: "3"
+version: '3.7'
+
+secrets:
+  mysql-root-password:
+    file: ./secrets/mysql-root-password.secret
+  mysql-password:
+    file: ./secrets/mysql-password.secret
+  mysql-database:
+    file: ./secrets/mysql-database.secret
+  mysql-user:
+    file: ./secrets/mysql-user.secret
 
 volumes:
   nextcloud:
@@ -17,10 +27,15 @@ services:
     volumes:
       - nextcloud-db:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_PASSWORD=password
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
+      - MYSQL_ROOT_PASSWORD=/run/secrets/mysql-root-password
+      - MYSQL_PASSWORD=/run/secrets/mysql-password
+      - MYSQL_DATABASE=/run/secrets/mysql-database
+      - MYSQL_USER=/run/secrets/mysql-user
+    secrets:
+      - mysql-root-password
+      - mysql-password
+      - mysql-database
+      - mysql-user
     labels:
       - traefik.enable=false
 
@@ -38,10 +53,14 @@ services:
     volumes:
       - nextcloud:/var/www/html
     environment:
-      - MYSQL_PASSWORD=password
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=/run/secrets/mysql-password
+      - MYSQL_DATABASE=/run/secrets/mysql-database
+      - MYSQL_USER=/run/secrets/mysql-user
       - MYSQL_HOST=nextcloud-db
+    secrets:
+      - mysql-password
+      - mysql-database
+      - mysql-user
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"

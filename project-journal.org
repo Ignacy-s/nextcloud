@@ -51,12 +51,8 @@ services:
   CLOSED: [2022-07-08 Fri 02:38]
 * DONE Getting a domain with Cloud Flare.
   CLOSED: [2022-07-08 Fri 02:42]
-* DONE Reading up on how to use secrets with docker compose. Mentioning some sites:
-  CLOSED: [2022-07-08 Fri 03:57]
-** [[https://www.rockyourcode.com/using-docker-secrets-with-docker-compose/]]
-*** For a local setup we can use files containing the secrets.
-*** For production need to use docker swarm to declare secrets on a different node.
-* TODO Local demo with docker-compose, traefik and portainer alongside, defining a network. Based on edited compose file from previous class.
+* DONE Local demo with docker-compose, traefik and portainer alongside, defining a network. Based on edited compose file from previous class.
+CLOSED: [2022-07-18 Mon 20:31]
 ** Writing a new docker-compose file based on examples from Docker Masterclass, Panda DevOps and Traefik Quickstart tutorial.
 *** After defining the network, adding traefik container, nextcloud container and db for nextcloud.
 #+BEGIN_SRC bash
@@ -326,9 +322,10 @@ volumes:
 ***** Uncomment things in docker-compose and see what happens. - It's the network defined in docker-compose that caused problems.
 ***** Need to learn how to connect nextcloud container with the database container using traefik.
 
-*** [[https://duckduckgo.com/?q=traefik+example+connect+app+and+database+containers&t=ffab&ia=web][Search for the docs]] resulted with an interesting find - example traefik/portainer/compose setup in a [[https://rafrasenberg.com/posts/docker-container-management-with-traefik-v2-and-portainer/][blog article]].
-*** TODO Connect app and db containers using Traefik.
-**** DONE Downloading project files from Raf's (blog author) Github repo.
+** [[https://duckduckgo.com/?q=traefik+example+connect+app+and+database+containers&t=ffab&ia=web][Search for the docs]] resulted with an interesting find - example traefik/portainer/compose setup in a [[https://rafrasenberg.com/posts/docker-container-management-with-traefik-v2-and-portainer/][blog article]].
+** DONE Connect app and db containers using Traefik. (for routing that doesn't leave the cluster, don't use traefik but use docker networks instead)
+CLOSED: [2022-07-17 Sun 16:35]
+*** DONE Downloading project files from Raf's (blog author) Github repo.
 CLOSED: [2022-07-15 Fri 23:20]
 #+BEGIN_SRC bash
   mkdir /vagrant/nextcloud-raf-local
@@ -336,13 +333,13 @@ CLOSED: [2022-07-15 Fri 23:20]
   curl -L \ https://github.com/rafrasenberg/docker-traefik-portainer/archive/master.tar.gz\
     | tar --strip-components=1 -zxf -
 #+END_SRC
-**** DONE Commenting out things related to https.
+*** DONE Commenting out things related to https.
 CLOSED: [2022-07-15 Fri 23:20]
-**** DONE Updating the password.
+*** DONE Updating the password.
 CLOSED: [2022-07-15 Fri 23:20]
 Used 'htpasswd -n igi'.
 'htpasswd' can be found in the 'apache2-utils' package (on Ubuntu).
-**** DONE Looking for workaround to using the 'Host' http header for routing - too lazy to forge http requests using browser plugins
+*** DONE Looking for workaround to using the 'Host' http header for routing - too lazy to forge http requests using browser plugins
 CLOSED: [2022-07-15 Fri 00:24]
 Http request consists of several things, one of them can be one or many
 headers. One of the headers carries information on what the hostname
@@ -350,9 +347,10 @@ that we tried to access was. Http request is sent to an IP address, so
 the Host header can be handy. Since I'm typing the IP address in the
 browser, have to find another way to let traefik know which service I
 want to access.
-**** DONE Adding new entrypoint for traefik dashboard. This way regular traffic will go to the portainer container and port 8080 to traefik dashboard.
+*** DONE Adding new entrypoint for traefik dashboard. This way regular traffic will go to the portainer container and port 8080 to traefik dashboard.
 CLOSED: [2022-07-15 Fri 00:24]
-**** TODO Add the nextcloud service and db for nextcloud.
+*** DONE Add the nextcloud service and db for nextcloud.
+CLOSED: [2022-07-17 Sun 16:35]
 For that I need to create a new docker-compose stack (so it's called
 in portainer settings). What needs to change compared to the first
 nextcloud local demo without traefik is traefik labels, including
@@ -360,21 +358,51 @@ labels for the docker networks. Reminding myself that I had to remove
 networks and https to get my local setup to work. Now I know why -
 when using traefik, we need to also define the network in traefik
 labels, the regular definition is not enough.
-***** DONE Copying last working nextcloud setup to apps folder in raf setup's directory.
+**** DONE Copying last working nextcloud setup to apps folder in raf setup's directory.
 CLOSED: [2022-07-16 Sat 17:14]
-***** DONE Fix the ingress for traefik (entrypoint with a dash '-' in it's name didn't work, maybe it's something with Golang's grammar? Changing dash to underscore '_', because there are other things in yaml files that have underscores in it's names) - turns out it was something else. Both dashes and underscores are ok in entrypoint names.
+**** DONE Fix the ingress for traefik (entrypoint with a dash '-' in it's name didn't work, maybe it's something with Golang's grammar? Changing dash to underscore '_', because there are other things in yaml files that have underscores in it's names) - turns out it was something else. Both dashes and underscores are ok in entrypoint names.
 CLOSED: [2022-07-16 Sat 17:20]
-***** DONE Create a new ingress for portainer so that nextcloud can use the default (port 80) route. It works, I think I'm getting the hang of using traefik.
+**** DONE Create a new ingress for portainer so that nextcloud can use the default (port 80) route. It works, I think I'm getting the hang of using traefik.
 CLOSED: [2022-07-16 Sat 17:23]
-***** DONE Setup the network for nextcloud and it's database in the traefik way (with proper labels).
+**** DONE Setup the network for nextcloud and it's database in the traefik way (with proper labels).
 CLOSED: [2022-07-16 Sat 18:06]
-****** Had a problem with whether I should route the to-database-traffic with Traefik. [[https://www.digitalocean.com/community/tutorials/how-to-use-traefik-v2-as-a-reverse-proxy-for-docker-containers-on-ubuntu-20-04][This digitalocean article]] says that it's enough to use docker networks, and to also tell traefik not to touch this container.
-****** Works :)
+***** Had a problem with whether I should route the to-database-traffic with Traefik. [[https://www.digitalocean.com/community/tutorials/how-to-use-traefik-v2-as-a-reverse-proxy-for-docker-containers-on-ubuntu-20-04][This digitalocean article]] says that it's enough to use docker networks, and to also tell traefik not to touch this container.
+***** Works :)
+** DONE Add secrets
+CLOSED: [2022-07-18 Mon 20:31]
+*** DONE Reading up on how to use secrets with docker compose. Mentioning some sites:
+CLOSED: [2022-07-18 Mon 20:06]
+**** Example usage of docker secrets from [[https://www.rockyourcode.com/using-docker-secrets-with-docker-compose/][a blog article.]]
+**** Documentation at [[https://docs.docker.com/engine/swarm/secrets/][docker.com docs on secrets.]]
+***** This one is about using the 'docker secret' command which requires usage of docker swarm mode.
+**** Documentation at [[https://docs.docker.com/compose/compose-file/compose-file-v3/#secrets][docker.com on secrets in compose file.]]
+**** Thoughts on secrets in project:
+***** For a local setup we can use files containing the secrets.
+***** For a proper production setup, I could use docker swarm to declare secrets on a different node.
+***** It's a second time somebody suggests that docker-compose is for testing and production should be run with 'docker stack create -c PATH_TO_COMPOSE_FILE' which uses docker swarm and same compose files as the docker-compose command I used until now.
+*** DONE Solving the problem of referencing path to secrets instead of actual values. Saw a PostgreSQL example with '_FILE' appended to environment variable names. Read up in documentation for the mariadb image on dockerhub that they use the same '*_FILE' style of variable names.
+CLOSED: [2022-07-18 Mon 20:06]
+*** DONE Putting secrets into the nextcloud compose file.
+CLOSED: [2022-07-18 Mon 20:06]
+*** DONE Populate the secrets file.
+CLOSED: [2022-07-18 Mon 20:26]
+Using 'openssl rand -base64 LENGTH' to populate files with random
+strings of sufficient length.
+*** DONE Issues - compose refuses to work with secrets.
+CLOSED: [2022-07-18 Mon 20:31]
+**** Tweaking the "version: '3'" - I have a feeling it's the version that is the problem.
+Reading up in compose docs I've found this [[https://docs.docker.com/compose/compose-file/compose-versioning/][compatibility matrix]]. It
+says that the latest version is 3.8 and it should work with my compose
+version (found with 'docker-compose --version' command) - 1.25.
 
-*** TODO Add secrets
-**** TODO In files first.
+It was however not recognized, just like version "4". With "version:
+.." removed, it calls even more errors about not recognized top level
+keywords.
 
-** Get Portainer.
+Had a hunch and changed it to 3.7. It works now.
+
+** DONE Get Portainer.
+CLOSED: [2022-07-17 Sun 14:20]
 * TODO Online demo using the domain.
 ** Getting the docker-compose file to run on the server.
 *** TODO Installing docker & utils on the server.
@@ -387,7 +415,9 @@ CLOSED: [2022-07-16 Sat 18:06]
 ** Automate Reading secrets by docker swarm.
 
 * Features Ideas:
-** Use Backblaze container
+** TODO Use Backblaze container
+*** There is a Nextcloud app that allows connecting remote storage systems, including s3. Might be easier to configure it there than to learn how to set up auto-mounting.
+
 ** DONE Use docker compose.
    CLOSED: [2022-07-04 Mon 23:51]
 #+BEGIN_SRC bash
@@ -435,7 +465,7 @@ Then run docker-compose up -d, now you can access Nextcloud at http://localhost:
 
 #+END_SRC
 
-** Use Docker Secrets
+** TODO Use Docker Secrets
 *** Copied from Docker Hub Readme file for Nextcloud.
 #+BEGIN_SRC bash
 Docker Secrets
@@ -504,8 +534,10 @@ If you set any group of values (i.e. all of MYSQL_DATABASE_FILE, MYSQL_USER_FILE
 
 #+END_SRC
 
-** Use Traefik.
-** Use Portainer.
+** DONE Use Traefik.
+CLOSED: [2022-07-17 Sun 14:22]
+** DONE Use Portainer.
+CLOSED: [2022-07-17 Sun 14:22]
 * Extras:
 ** TODO Vagrant doesn't start automatically (requires choosing an interface to bridge with). Make it use wlp3s0 by default.
 ** [[https://stackoverflow.com/a/72599205][Link]]: Downloading contents of a git repo without creating the git repo itself (without creating .git directory and all the stuff inside it)
@@ -516,3 +548,4 @@ https://github.com/rafrasenberg/docker-traefik-portainer/archive/master.tar.gz |
 tar zxf -
 #+END_SRC
 *** It's pretty cool, because it allows "cloning" stuff into directories already indexed by another repo.
+*** To extract right inside current directory and not into a directory inside it: use an extra 'tar' long option to strip 1 level of subdirectories.
