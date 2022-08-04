@@ -1,0 +1,75 @@
+version: '3.7'
+
+secrets:
+  mysql-root-password:
+    file: ./secrets/mysql-root-password.secret
+  mysql-password:
+    file: ./secrets/mysql-password.secret
+  mysql-database:
+    file: ./secrets/mysql-database.secret
+  mysql-user:
+    file: ./secrets/mysql-user.secret
+
+volumes:
+  nextcloud:
+  nextcloud-db:
+
+services:
+  nextcloud-db:
+    image: mariadb
+    container_name: nextcloud-db
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - nextcloud-db
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    volumes:
+      - nextcloud-db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=/run/secrets/mysql-root-password
+      - MYSQL_PASSWORD=/run/secrets/mysql-password
+      - MYSQL_DATABASE=/run/secrets/mysql-database
+      - MYSQL_USER=/run/secrets/mysql-user
+    secrets:
+      - mysql-root-password
+      - mysql-password
+      - mysql-database
+      - mysql-user
+    labels:
+      - traefik.enable=false
+
+  nextcloud:
+    image: nextcloud
+    container_name: nextcloud
+    restart: unless-stopped
+    depends_on:
+      - nextcloud-db
+    security_opt:
+      - no-new-privileges:true
+    networks:
+        - nextcloud-db
+        - proxy
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      - MYSQL_PASSWORD=/run/secrets/mysql-password
+      - MYSQL_DATABASE=/run/secrets/mysql-database
+      - MYSQL_USER=/run/secrets/mysql-user
+      - MYSQL_HOST=nextcloud-db
+    secrets:
+      - mysql-password
+      - mysql-database
+      - mysql-user
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.nextcloud-router.entrypoints=web"
+      - "traefik.http.routers.nextcloud-router.rule=PathPrefix(`/`)"
+
+      
+networks:
+  nextcloud-db:
+    external: false
+  proxy:
+    external: true

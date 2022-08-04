@@ -404,22 +404,90 @@ Had a hunch and changed it to 3.7. It works now.
 ** DONE Get Portainer.
 CLOSED: [2022-07-17 Sun 14:20]
 * TODO Online demo using the domain.
-** Getting the docker-compose file to run on the server.
-*** TODO Installing docker & utils on the server.
-* TODO Get certs with Traefik.
-** Fake (training) cert.
-** Real cert.
-* TODO http to https redirect with Traefik.
-* TODO Docker Swarm with a separate manager node.
-** Get Swarm to Work
-** Automate Reading secrets by docker swarm.
+** DONE Problem - tracking online server's setup with git?
+CLOSED: [2022-08-04 Thu 20:01]
+*** Solution proposal - Run the setup from local machine (where the code is) by an scp (rsync) & ssh compound command on a remote server.
+*** Chosen This - Solution proposal - Have a script that copies files from the server (but not the certs and similar). Going with this one, as there are only 3 files to copy into the repo. Script will also remove the password hash and put in in another file that will be tracked by git. At the same time I have a fully working setup on my computer.
+*** Writing the script - get-core-files-from-server.sh
+** DONE Getting the docker-compose file to run on the server.
+CLOSED: [2022-08-04 Thu 19:42]
+*** DONE Installing docker & utils on the server.
+CLOSED: [2022-08-03 Wed 20:43]
+**** Found that docker.io from default Ubuntu repo is 20.10.7, while one downloaded from Docker repo is 20.10.17, doesn't seem like that much of a difference. Could've just installed from Ubuntu.
+**** Installing docker like it was installed in provision.sh script for PandaVM from panda dev ops course.
+#+BEGIN_SRC bash
+# Installing docker (from
+# https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-from-a-package
+# )
+sudo apt update
+sudo apt install -y \
+     apt-transport-https \
+     ca-certificates \
+     curl \
+     gnupg \
+     lsb-release
+
+# Download docker keyring only if it doesn't exist yet.
+[[ ! -e /usr/share/keyrings/docker-archive-keyring.gpg ]] && \
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+  sudo gpg --dearmor -o \
+       /usr/share/keyrings/docker-archive-keyring.gpg
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+    | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io
+#+END_SRC
+**** Installed docker-compose (instead of a newer docker-compose-plugin) because of bash completions.
+**** Created a nextcloud user, added him to sudo and docker groups.
+** Make the core (traefik and portainer) work with proper certs.
+*** Created a new directory in the git repo for remote server configuration.
+*** Created CNAME DNS records for portainer.server.com and traefik.server.com in Claudflare's dashboard.
+**** Problem: CNAME records don't work.
+**** Solved: Started working by itself after I took a break. After that I remembered that DNS records actually take some time to work.
+*** Modifying traefik configuration to make it work on a server:
+**** Fix Entrypoints and container labels in docker-compose.yml in core/
+**** DONE Re-enable https (but use the staging letsencrypt server first !!!!) in traefik config files traefik.yml and dynamic.yml
+CLOSED: [2022-08-03 Wed 15:52]
+** DONE Get certs with Traefik.
+CLOSED: [2022-08-04 Thu 19:42]
+*** DONE Fake (training) cert.
+CLOSED: [2022-08-03 Wed 20:43]
+*** Issues with traefik: acme.json file's perms were not 600 - fixed. It was important to scroll all the way up to look at the first error. Last ones were cryptic but became clear when realized what failed first.
+*** Issues with traefik: secureHeaders middleware was not defined properly. It was in the dynamic.yml traefik conf file that got stripped and had most of it's content moved to dynamic-password-hash.yml. Moved the definition of secureHeaders to the new file.
+*** DONE Real cert.
+CLOSED: [2022-08-03 Wed 20:59]
+Since staging cert worked nicely, all I had to do was change the
+caServer to the non-staging. Browser kept showing invalid cert
+(staging cert), but after restarting it started showing correctly.
+
+** DONE http to https redirect with Traefik.
+CLOSED: [2022-08-03 Wed 20:43]
+** TODO Get the app (nextcloud) to run on the server.
+** Small security improvements:
+*** Changed htpasswd basic auth password to use Bcrypt instead of MD5, as it's much safer.
+*** Forced TLS 1.3 instead of 1.2. This also makes it ok to put the tls cipher suites in the repo (as explained by a drunk security expert at a bar).
+* TODO Configure Nextcloud:
+Nextcloud calls it's plugins Apps. Most of fancy capabilities are
+enabled trough apps.
+** Add Group Folders App
+** Add an App for user creation.
+** Connect a Backblaze bucket (as s3, using an App for external storage).
+
 
 * Features Ideas:
-** TODO Use Backblaze container
-*** There is a Nextcloud app that allows connecting remote storage systems, including s3. Might be easier to configure it there than to learn how to set up auto-mounting.
+** TODO Use a Backblaze container
+*** There is a Nextcloud app that allows connecting remote storage systems, including s3. Might be easier to configure it there than to learn how to set up auto-mounting of s3 containers on a server.
 
+** TODO Docker Swarm with a separate manager node.
+*** Get Swarm to Work
+*** Automate Reading secrets by docker swarm.
+
+** TODO Use Cloudflare's fancy routing and host protection.
 ** DONE Use docker compose.
-   CLOSED: [2022-07-04 Mon 23:51]
+CLOSED: [2022-08-03 Wed 21:00]
 #+BEGIN_SRC bash
 Base version - apache
 
@@ -465,7 +533,8 @@ Then run docker-compose up -d, now you can access Nextcloud at http://localhost:
 
 #+END_SRC
 
-** TODO Use Docker Secrets
+** DONE Use Docker Secrets
+CLOSED: [2022-07-20 Wed 19:19]
 *** Copied from Docker Hub Readme file for Nextcloud.
 #+BEGIN_SRC bash
 Docker Secrets
