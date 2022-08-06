@@ -1,0 +1,27 @@
+version: '3'
+
+volumes:
+  nginx-root-data:
+    external: true
+
+services:
+  nginx:
+    image: nginx
+    container_name: nginx-root
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+        - proxy
+    volumes:
+      - nginx-root-data:/usr/share/nginx/html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.nginx-root-router.entrypoints=websecure"
+      - "traefik.http.routers.nginx-root-router.rule=Host(`oficjalne.info`)"
+
+      
+networks:
+  proxy:
+    external: true
