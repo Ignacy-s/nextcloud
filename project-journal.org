@@ -403,7 +403,8 @@ Had a hunch and changed it to 3.7. It works now.
 
 ** DONE Get Portainer.
 CLOSED: [2022-07-17 Sun 14:20]
-* TODO Online demo using the domain.
+* DONE Online demo using the domain.
+CLOSED: [2022-08-06 Sat 14:12]
 ** DONE Problem - tracking online server's setup with git?
 CLOSED: [2022-08-04 Thu 20:01]
 *** Solution proposal - Run the setup from local machine (where the code is) by an scp (rsync) & ssh compound command on a remote server.
@@ -465,9 +466,24 @@ caServer to the non-staging. Browser kept showing invalid cert
 
 ** DONE http to https redirect with Traefik.
 CLOSED: [2022-08-03 Wed 20:43]
-** TODO Get the app (nextcloud) to run on the server.
-*** TODO Read through configs that worked locally and make changes needed to make them work on a server.
-*** 
+** DONE Get the app (nextcloud) to run on the server.
+CLOSED: [2022-08-06 Sat 14:12]
+*** DONE Read through configs that worked locally and make changes needed to make them work on a server.
+CLOSED: [2022-08-06 Sat 14:12]
+**** Changing volumes to mount directories inside the docker-compose project directory instead of using docker volumes.
+**** Changing the router rule to use 'websecure' as entrypoint and to route based on HTTP Host header.
+**** Add a mount for containers to see server's local time.
+As an entry in container's volumes in docker-compose file added:
+#+BEGIN_SRC bash
+     - /etc/localtime:/etc/localtime:ro
+#+END_SRC
+Which I guess is allowing the container to access local time in read
+only mode.
+
+*** Add a 'cloud.*' CNAME record on the DNS server using the Cloudflare's dashboard.
+*** Launch the app with 'docker-compose up', create an admin user and install nextcloud on the server (nextcloud container is the server here).
+
+
 ** Small security improvements:
 *** Changed htpasswd basic auth password to use Bcrypt instead of MD5, as it's much safer.
 *** Forced TLS 1.3 instead of 1.2. This also makes it ok to put the tls cipher suites in the repo (as explained by a drunk security expert at a bar).
@@ -478,6 +494,7 @@ CLOSED: [2022-08-06 Sat 13:34]
 * TODO Configure Nextcloud:
 Nextcloud calls it's plugins Apps. Most of fancy capabilities are
 enabled trough apps.
+** Sort out security errors (using a reverse-proxy like traefik requires some extra configuration).
 ** Add Group Folders App
 ** Add an App for user creation.
 ** Connect a Backblaze bucket (as s3, using an App for external storage).
