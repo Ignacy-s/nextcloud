@@ -1,3 +1,5 @@
+# from Ignacy: this is a readme file from the project I used to get a working Traefik configuration. Links are not to my blog, but to this readme's original author.
+
 # Docker container management with Traefik v2 and Portainer
 
 A configuration set-up for a Traefik v2 reverse proxy along with Portainer and Docker Compose.
