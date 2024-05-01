@@ -4,6 +4,8 @@
 
 This repository documents my journey of deploying a Nextcloud instance, transitioning from a simple local Docker setup to a more complex, cloud-based configuration. This project served as a practical learning experience in deploying apps in the cloud using Docker, focusing on the path and growth over the destination.
 
+As there are not many projects that were viable for showcasing on GitHub, I've decided to leverage LLM (gpt-4-turbo trough ChatGPT interface) to refactor the project and generate a README file for it.
+
 ## Purpose
 
 The primary purpose of this project was to explore and understand the intricacies of containerized application deployment using Docker, Traefik, and Portainer. It began with a straightforward local environment and gradually scaled into a full-fledged cloud deployment.
