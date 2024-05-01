@@ -1,8 +1,10 @@
-# Project Title: Learning Project: Nextcloud Deployment Journey
+# Learning Project: Nextcloud Deployment Journey
 
 ## Overview
 
 This repository documents my journey of deploying a Nextcloud instance, transitioning from a simple local Docker setup to a more complex, cloud-based configuration. This project served as a practical learning experience in deploying apps in the cloud using Docker, focusing on the path and growth over the destination.
+
+Detailed information on how the project was executed can be found in the project-journal.org file. Commits to the project were made side-by-side with comments in the journal, which can help understaning the thought process behind commits to the code/files.
 
 As there are not many projects that were viable for showcasing on GitHub, I've decided to leverage LLM (gpt-4-turbo trough ChatGPT interface) to refactor the project and generate a README file for it.
 
