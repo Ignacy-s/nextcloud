@@ -503,6 +503,9 @@ it and restarting the nextcloud stack.
 ** Connect a Backblaze bucket (as s3, using an App for external storage).
 
 
+* Refactoring project in preparation for publication on GitHub
+** Consolidating talos-machines and dragon-machines directories into nextcloud-local
+
 * Features Ideas:
 ** TODO Use a Backblaze container
 *** There is a Nextcloud app that allows connecting remote storage systems, including s3. Might be easier to configure it there than to learn how to set up auto-mounting of s3 containers on a server.
